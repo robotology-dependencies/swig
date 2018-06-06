@@ -2756,6 +2756,34 @@ void MATLAB::createSwigRef() {
   Printf(f_wrap_m, "    function b = isnull(self)\n");
   Printf(f_wrap_m, "      b = isempty(self.swigPtr);\n");
   Printf(f_wrap_m, "    end\n");
+  Printf(f_wrap_m, "    function varargout = subsref(self,s)\n");
+  Printf(f_wrap_m, "      if numel(s)==1\n");
+  Printf(f_wrap_m, "        switch s.type\n");
+  Printf(f_wrap_m, "          case '.'\n");
+  Printf(f_wrap_m, "            [varargout{1}] = builtin('subsref',self,substruct('.',s.subs,'()',{}));\n");
+  Printf(f_wrap_m, "          case '()'\n");
+  Printf(f_wrap_m, "            [varargout{1:nargout}] = builtin('subsref',self,substruct('.','paren','()',s.subs));\n");
+  Printf(f_wrap_m, "          case '{}'\n");
+  Printf(f_wrap_m, "            [varargout{1:nargout}] = builtin('subsref',self,substruct('.','brace','()',s.subs));\n");
+  Printf(f_wrap_m, "        end\n");
+  Printf(f_wrap_m, "      else\n");
+  Printf(f_wrap_m, "        [varargout{1:nargout}] = builtin('subsref',self,s);\n");
+  Printf(f_wrap_m, "      end\n");
+  Printf(f_wrap_m, "    end\n");
+  Printf(f_wrap_m, "    function self = subsasgn(self,s,v)\n");
+  Printf(f_wrap_m, "      if numel(s)==1\n");
+  Printf(f_wrap_m, "        switch s.type\n");
+  Printf(f_wrap_m, "          case '.'\n");
+  Printf(f_wrap_m, "            builtin('subsref',self,substruct('.',s.subs,'()',{v}));\n");
+  Printf(f_wrap_m, "          case '()'\n");
+  Printf(f_wrap_m, "            builtin('subsref',self,substruct('.','paren_asgn','()',{v, s.subs{:}}));\n");
+  Printf(f_wrap_m, "          case '{}'\n");
+  Printf(f_wrap_m, "            builtin('subsref',self,substruct('.','setbrace','()',{v, s.subs{:}}));\n");
+  Printf(f_wrap_m, "        end\n");
+  Printf(f_wrap_m, "      else\n");
+  Printf(f_wrap_m, "        self = builtin('subsasgn',self,s,v);\n");
+  Printf(f_wrap_m, "      end\n");
+  Printf(f_wrap_m, "    end\n");
   Printf(f_wrap_m, "    function SwigSet(self,ptr)\n");
   Printf(f_wrap_m, "        self.swigPtr = ptr;\n");
   Printf(f_wrap_m, "    end\n");
@@ -2828,7 +2856,7 @@ void MATLAB::createSwigGet() {
     FileErrorDisplay(mfile);
     SWIG_exit(EXIT_FAILURE);
   }
-  // Output SwigMem function
+  // Output SwigGet function
   Printf(f_wrap_m, "function ptr = SwigGet(self)\n");
   Printf(f_wrap_m, "  ptr = [];\n");
   Printf(f_wrap_m, "end\n");
@@ -2850,7 +2878,7 @@ void MATLAB::createSwigStorage() {
     FileErrorDisplay(mfile);
     SWIG_exit(EXIT_FAILURE);
   }
-  // Output SwigMem function
+  // Output SwigStorage function
   Printf(f_wrap_m, "function varargout = SwigStorage(field, varargin)\n");
   Printf(f_wrap_m, "  persistent dir_mem\n");
   Printf(f_wrap_m, "  mlock\n");
